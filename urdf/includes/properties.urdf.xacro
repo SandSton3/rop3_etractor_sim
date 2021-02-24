@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<robot name="properties" xmlns:xacro="http://ros.org/wiki/xacro">
+    <!-- Baseframe-Parameters-->
+    <xacro:property name="baseframe_mass" value="300" />
+    <xacro:property name="baseframe_length" value="3.300" />
+    <xacro:property name="baseframe_width" value="0.980" />
+    <xacro:property name="baseframe_height" value="0.290" />
+    <xacro:property name="baseframe_width" value="0.980" />
+    <!-- Steerin-axis-Parameter (Simplyfied as cylinder)-->
+    <xacro:property name="steeraxis_mass"   value="100" />
+    <xacro:property name="steeraxis_dia"    value="0.1" />
+    <xacro:property name="steeraxis_length" value="0.8" />
+    <xacro:property name="steeraxis_offset"  value="0.3" />
+    <!-- wheel-Parametes -->
+    <xacro:property name="wheel_dia"    value="1" />
+    <xacro:property name="wheel_width"  value="0.5" />
+    <xacro:property name="wheel_mass"   value="100" />
+    <xacro:property name="wheel_friction_coeff_dir1"   value="10" />
+    <xacro:property name="wheel_friction_coeff_dir2"   value="10" />
+    <xacro:property name="wheel_stiffness_coeff"   value="1000000000" />
+    <xacro:property name="wheel_damping_coeff"   value="1" />
+    <xacro:property name="wheel_max_torque"   value="1000000000" />
+    <xacro:property name="wheel_max_vel"   value="10000" />
+    <!--360°-Camera-System-Parameters-->
+    <xacro:property name="camsys_base_x"    value="0.2" />
+    <xacro:property name="camsys_base_y"    value="0.2" />
+    <xacro:property name="camsys_base_z"    value="0.05" />
+    <xacro:property name="camsys_base_mass"    value="1" />
+    <xacro:property name="camsys_offset_xyz"    value="${baseframe_length/2} 0 0.7" />
+    <xacro:property name="camsys_tilt"    value="10" />
+    <xacro:property name="camsys_res_x"    value="4192" />
+    <xacro:property name="camsys_res_y"    value="3120" />
+    <xacro:property name="camsys_hfov"    value="110" />
+
+
+    <!-- Constants -->
+    <xacro:property name="pi"       value="3.1415926" />
+    <xacro:property name="pi_half"  value="1.5707963" />
+    <xacro:property name="pi_quad"  value="0.7853981" />
+</robot>

@@ -1,0 +1,35 @@
+<robot name="inertials" xmlns:xacro="http://ros.org/wiki/xacro">
+<!-- Inertia of a solid cylinder, with origin in center-->
+  <xacro:macro name="solid_cylinder_inertial"
+  params="radius height mass">
+<inertial>
+<mass value="${mass}"/>
+<inertia ixx="${mass * (3*radius*radius + height*height) / 12}"
+  ixy="0" ixz="0"
+  iyy="${mass * (3*radius*radius + height*height) / 12}"
+  iyz="0"
+  izz="${mass * radius * radius / 2}"/>
+</inertial>
+</xacro:macro>
+
+<!-- Default inertial-->
+<xacro:macro name="default_inertial" params="mass">
+    <inertial>
+      <mass value="${mass}" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+    </inertial>
+  </xacro:macro>
+
+  <!-- Inertial for solid cuboid with dimensions x y z  -->
+  <xacro:macro name="solid_cuboid_inertial" params="rpy xyz mass x y z">
+      <inertial>
+          <origin rpy="${rpy}" xyz="${xyz}"/>
+          <mass value="${mass}" />
+          <inertia
+              ixx="${mass * (y * y + z * z) / 12.0}" ixy="0.0" ixz="0.0"
+              iyy="${mass * (x * x + z * z) / 12.0}" iyz="0.0"
+              izz="${mass * (x * x + y * y) / 12.0}" />
+      </inertial>
+  </xacro:macro>
+
+  </robot>

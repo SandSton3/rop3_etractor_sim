@@ -1,0 +1,27 @@
+<launch>
+  <arg name="steering" default="diffdrive" />
+  <!-- Worlds: empty, simple, terrain -->
+  <arg name="world" default="empty" />
+
+  <include file="$(find et_sim)/launch/gazebo.launch">
+    <arg name="model" value="$(find et_sim)/urdf/etractor_$(arg steering).urdf.xacro" />
+    <arg name="world_name" value="$(find et_sim)/worlds/$(arg world).world" />
+  </include>
+
+  <!-- Worlds: empty, simple, terrain -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find et_sim)/rviz/urdf.rviz" />
+
+  <rosparam command="load"
+            file="$(find et_sim)/config/joints.yaml"
+            ns="etractor_joint_state_controller" />
+  <rosparam command="load"
+            file="$(find et_sim)/config/$(arg steering).yaml"
+            ns="etractor_$(arg steering)_controller" />
+
+  <node name="etractor_controller_spawner" pkg="controller_manager" type="spawner"
+    args="etractor_joint_state_controller etractor_$(arg steering)_controller --shutdown-timeout 3"/>
+
+  <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
+    <param name="default_topic" value="/etractor_$(arg steering)_controller/cmd_vel"/>
+  </node>
+</launch>

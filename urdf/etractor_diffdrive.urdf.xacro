@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<robot name="etractor" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<xacro:include filename="$(find et_sim)/urdf/includes/properties.urdf.xacro"/>  
+<xacro:include filename="$(find et_sim)/urdf/includes/materials.urdf.xacro"/>  
+<xacro:include filename="$(find et_sim)/urdf/includes/inertials.urdf.xacro"/> 
+<xacro:include filename= "$(find et_sim)/urdf/sensoric/360_cam_sys.urdf.xacro" /> 
+<xacro:include filename= "$(find et_sim)/urdf/sensoric/zed2_simple.urdf.xacro" /> 
+
+<!-- Dummy link workaround -->
+<link name="base_link">
+    <visual>
+      <geometry>
+        <sphere radius="0.01"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+    <!-- Baseframe -->
+    <link name="baseframe">
+        <visual>
+            <geometry>
+                <mesh filename="package://et_sim/meshes/baseframe.dae" />
+            </geometry>
+            <material name="blue" />
+            <origin xyz="0 0 0" rpy="${pi/2} 0 0" /> 
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="package://et_sim/meshes/baseframe.dae" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="${pi/2} 0 0" /> 
+        </collision>
+        <xacro:default_inertial mass="${baseframe_mass}"/>
+    </link>
+    <joint name="baseframe-base_link" type="fixed">
+        <parent link="base_link"/>
+        <child link="baseframe"/>
+    </joint>
+
+
+<!-- Steeraxis -->
+    <xacro:macro name="steeraxis" params="prefix reflect" >
+    <link name="${prefix}_steeraxis">
+        <visual>
+            <geometry>
+                <cylinder radius="${steeraxis_dia/2}" length="${steeraxis_length}"/>
+            </geometry>
+            <material name= "blue"/>
+            <origin xyz="0.0 0.0 0.0" rpy="${pi_half} 0.0 0.0"/>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${steeraxis_dia/2}" length="${steeraxis_length}"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.0" rpy="${pi_half} 0.0 0.0"/>
+        </collision>
+        <xacro:solid_cylinder_inertial
+            radius  = "${steeraxis_dia/2}"
+            height  = "${steeraxis_length}"
+            mass    = "${steeraxis_mass}">
+        </xacro:solid_cylinder_inertial>
+    </link>
+    <joint name="${prefix}_axis_baseframe" type="fixed">
+        <parent link="baseframe"/>
+        <child link="${prefix}_steeraxis"/>
+        <origin xyz="${((baseframe_length/2) -steeraxis_offset) * reflect} 0.0 0.0" rpy="0.0 0.0 0.0"/>         
+    </joint>
+</xacro:macro>
+
+<xacro:steeraxis prefix="front"  reflect="1" />
+<xacro:steeraxis prefix="back"   reflect="-1" />
+
+<!-- wheels begin -->
+<xacro:macro name= "wheel" params= "prefix suffix lr_refl">
+    <link name="${prefix}_${suffix}_wheel">
+        <xacro:solid_cylinder_inertial
+            radius  = "${wheel_dia/2}"
+            height  = "${wheel_width}"
+            mass    = "${wheel_mass}">
+        </xacro:solid_cylinder_inertial>
+        <visual>
+            <origin rpy="${pi_half} 0.0 0.0"/> 
+            <geometry>
+                <cylinder radius="${wheel_dia/2}" length="${wheel_width}"/>
+            </geometry>
+            <material name= "black"/>
+        </visual>
+        <collision>
+            <origin rpy="${pi_half} 0.0 0.0"/> 
+            <geometry>
+                <cylinder radius="${wheel_dia/2}" length="${wheel_width}"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="${prefix}_${suffix}_wheel_joint" type="continuous">
+        <origin xyz="0.0 ${(steeraxis_length+wheel_width) * lr_refl/2.0} 0.0" rpy="0.0 0.0 0.0"/>    
+        <parent link="${prefix}_steeraxis"/>
+        <child link="${prefix}_${suffix}_wheel"/>
+        <axis xyz="0 1 0 "/>
+        <limit effort="${wheel_max_torque}" velocity="${wheel_max_vel}"/>
+    </joint>
+    <!-- This block provides the simulator (Gazebo) with information on a few additional
+    physical properties.
+    mu1 = Coulomb friction coefficient in direction 1
+    mu2 = Coulomb friction coefficient in direction 2
+    kp  = Stiffnes
+    kd  = Damping 
+    See http://gazebosim.org/tutorials/?tut=ros_urdf for more-->
+    <gazebo reference="${prefix}_${suffix}_wheel">
+        <mu1 value ="${wheel_friction_coeff_dir1}"/>
+        <mu2 value ="${wheel_friction_coeff_dir2}"/>
+        <kp value  ="${wheel_stiffness_coeff}"   />
+        <kd value  ="${wheel_damping_coeff}"   />
+        <material>Gazebo/Black</material>
+      </gazebo>
+    <!-- This block connects the wheel joint to an actuator (motor), which informs both
+    simulation and visualization of the robot -->
+    <transmission name="${prefix}_${suffix}_wheel_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="${prefix}_${suffix}_wheel_motor">
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+        <joint name="${prefix}_${suffix}_wheel_joint">
+          <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>
+      </transmission>
+   
+</xacro:macro>
+    
+<xacro:wheel prefix="front"    suffix="left"   lr_refl= "1" /> 
+<xacro:wheel prefix="front"    suffix="right"  lr_refl= "-1" />
+<xacro:wheel prefix="back"     suffix="left"   lr_refl= "1" />
+<xacro:wheel prefix="back"     suffix="right"  lr_refl= "-1" /> 
+<!-- wheels end -->
+
+
+<!-- Gazebo plugin for ROS Control -->
+<gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        <robotNamespace>/</robotNamespace>
+    </plugin>
+</gazebo>
+
+<!-- 360° Camera System -->
+<xacro:cam_sys name="camsys" 
+parent= "baseframe"
+base_x = "${camsys_base_x}" 
+base_y = "${camsys_base_y}" 
+base_z = "${camsys_base_z}" 
+base_mass = "${camsys_base_mass}"
+cam_tilt = "${camsys_tilt}"
+hfov="${camsys_hfov}"
+res_x="${camsys_res_x}"
+res_y= "${camsys_res_y}"
+image_format = "R8G8B8"
+update_rate = "50"
+>
+<origin xyz="${camsys_offset_xyz}" rpy="0.0 0.0 0.0"/>
+</xacro:cam_sys>
+
+<!-- Simple ZED2 Modell -->
+<xacro:zed2_simple name="zed2" parent="camsys_base" hfov="110" res_w="1920" res_h="1080">
+<origin xyz="0 0 0.2" rpy="0.0 ${10 *pi / 180} 0.0"/>
+</xacro:zed2_simple>
+</robot>

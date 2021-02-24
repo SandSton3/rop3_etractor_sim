@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+<xacro:include filename="$(find et_sim)/urdf/includes/properties.urdf.xacro"/>  
+  
+<xacro:macro name="zed2_simple" params="name parent *origin hfov res_w res_h">
+<link name="${name}_frame">
+  <visual>
+    <geometry>
+      <box size="0.01 0.01 0.01"/>
+    </geometry>
+  </visual>
+  <collision>
+    <geometry>
+      <box size="0.01 0.01 0.01"/>
+    </geometry>
+  </collision>
+</link>
+<joint name="base_link" type="fixed">
+  <xacro:insert_block name="origin" />
+  <parent link="${parent}"/>
+  <child link="${name}_frame"/>
+</joint>
+<link name="${name}_optical_frame"> />
+  <visual>
+    <geometry>
+      <cylinder radius="0.01" length="0.01"/> 
+    </geometry>
+  </visual>
+  <collision>
+    <geometry>
+      <cylinder radius="0.01" length="0.01"/>
+    </geometry>
+  </collision>
+</link>
+
+<joint name="frame_link" type="fixed">
+  <origin xyz="0.0 0.0 0.0" rpy="${-pi_half} 0 ${-pi_half}"/>
+      <parent link="${name}_frame"/>
+      <child link="${name}_optical_frame"/>
+</joint>
+
+  <gazebo reference="${name}_frame">
+    <sensor type="depth" name="${name}_frame_sensor">
+      <always_on>true</always_on>
+      <update_rate>20.0</update_rate>
+      <camera>
+        <horizontal_fov>${hfov*pi/180.0}</horizontal_fov>
+        <image>
+          <format>R8G8B8</format>
+          <width>${res_w}</width>
+          <height>${res_h}</height>
+        </image>
+        <clip>
+          <near>0.03</near>
+          <far>25</far>
+        </clip>
+      </camera>
+      <plugin name="${name}_frame_controller" filename="libgazebo_ros_openni_kinect.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>20.0</updateRate>
+        <cameraName>${name}</cameraName>
+        <imageTopicName>${name}/ir/image_raw</imageTopicName>
+        <cameraInfoTopicName>${name}/ir/camera_info</cameraInfoTopicName>
+        <depthImageTopicName>${name}/depth/image_raw</depthImageTopicName>
+        <depthImageCameraInfoTopicName>${name}/depth/camera_info</depthImageCameraInfoTopicName>
+        <pointCloudTopicName>${name}/depth/points</pointCloudTopicName>
+        <frameName>${name}_optical_frame</frameName>
+        <pointCloudCutoff>0.5</pointCloudCutoff>
+        <distortionK1>0.00000001</distortionK1>
+        <distortionK2>0.00000001</distortionK2>
+        <distortionK3>0.00000001</distortionK3>
+        <distortionT1>0.00000001</distortionT1>
+        <distortionT2>0.00000001</distortionT2>
+        <CxPrime>0</CxPrime>
+        <Cx>0</Cx>
+        <Cy>0</Cy>
+        <focalLength>0</focalLength>
+        <hackBaseline>0</hackBaseline>
+      </plugin>
+    </sensor>
+
+    <sensor type="depth" name="${name}_frame_sensor">
+      <always_on>true</always_on>
+      <update_rate>20.0</update_rate>
+      <camera>
+        <horizontal_fov>${hfov*pi/180.0}</horizontal_fov>
+        <image>
+          <format>R8G8B8</format>
+          <width>${res_w}</width>
+          <height>${res_h}</height>
+        </image>
+        <clip>
+          <near>0.01</near>
+          <far>25</far>
+        </clip>
+      </camera>
+
+      <plugin name="${name}_frame_controller" filename="libgazebo_ros_openni_kinect.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>20.0</updateRate>
+        <cameraName>${name}</cameraName>
+        <imageTopicName>${name}/rgb/image_raw</imageTopicName>
+        <cameraInfoTopicName>${name}/rgb/camera_info</cameraInfoTopicName>
+        <depthImageTopicName>${name}/depth/image_raw</depthImageTopicName>
+        <depthImageCameraInfoTopicName>${name}/depth/camera_info</depthImageCameraInfoTopicName>
+        <pointCloudTopicName>${name}/rgb/points</pointCloudTopicName>
+        <frameName>${name}_optical_frame</frameName>
+        <pointCloudCutoff>0.5</pointCloudCutoff>
+        <distortionK1>0.00000001</distortionK1>
+        <distortionK2>0.00000001</distortionK2>
+        <distortionK3>0.00000001</distortionK3>
+        <distortionT1>0.00000001</distortionT1>
+        <distortionT2>0.00000001</distortionT2>
+        <CxPrime>0</CxPrime>
+        <Cx>0</Cx>
+        <Cy>0</Cy>
+        <focalLength>0</focalLength>
+        <hackBaseline>0</hackBaseline>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</xacro:macro>
+
+</robot>

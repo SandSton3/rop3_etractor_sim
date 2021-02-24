@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+
+<robot name="cam_sys" xmlns:xacro="http://ros.org/wiki/xacro">
+<xacro:include filename="$(find et_sim)/urdf/sensoric/generic_cam.urdf.xacro"/>
+    
+<xacro:macro name= "cam_sys" params="name parent *origin base_x base_y base_z base_mass cam_tilt hfov res_x res_y image_format update_rate" >
+<!--Base-Begin-->
+<link name="${name}_base">
+<xacro:solid_cuboid_inertial 
+rpy= "0 0 0"
+xyz= "0 0 0"
+mass= "1"
+x="${base_x}"
+y="${base_y}"
+z="${base_z}"/>
+    <visual>
+        <geometry>
+            <box size="${base_x} ${base_y} ${base_z}"/>
+        </geometry>
+        <material name="green"/>>
+    </visual>
+    <collision>
+        <geometry>
+            <box size="${base_x} ${base_y} ${base_z}"/>
+        </geometry>
+    </collision>
+</link>
+<joint name="${name}_base_joint" type="fixed">
+    <xacro:insert_block name="origin" />
+    <parent link="${parent}"/>
+    <child link="${name}_base"/>
+</joint>
+<gazebo reference="${name}_base">
+    <material>Gazebo/Green</material>
+</gazebo>
+<!--Base-End-->
+
+<xacro:macro name= "gen_cam_wrapper" params="orientation_suffix *origin">
+
+<xacro:generic_camera name= "${name}_${orientation_suffix}_cam"
+parent="${name}_base"
+ros_topic = "${name}_${orientation_suffix}_topic"
+cam_info_topic= "${name}_${orientation_suffix}_info_topic"
+update_rate = "50"
+res_x = "${res_x}"
+res_y = "${res_y}"
+image_format = "${image_format}"
+hfov = "${hfov}"
+>
+<xacro:insert_block name="origin" />
+</xacro:generic_camera>
+</xacro:macro>
+
+<xacro:gen_cam_wrapper orientation_suffix = "north">
+<origin xyz="${base_x/2} 0.0 ${base_z}" rpy="0.0 ${cam_tilt*pi/180} 0.0"/>
+</xacro:gen_cam_wrapper>
+<xacro:gen_cam_wrapper orientation_suffix = "east">
+<origin xyz="0 ${-base_y/2} ${base_z}" rpy="0.0 ${cam_tilt*pi/180} ${-pi/2}"/>
+</xacro:gen_cam_wrapper>
+<xacro:gen_cam_wrapper orientation_suffix = "south">
+<origin xyz="${-base_x/2} 0.0 ${base_z}" rpy="0.0 ${cam_tilt*pi/180} ${pi}"/>
+</xacro:gen_cam_wrapper>
+<xacro:gen_cam_wrapper orientation_suffix = "west">
+<origin xyz="0 ${base_y/2} ${base_z}" rpy="0.0 ${cam_tilt*pi/180} ${pi/2}"/>
+</xacro:gen_cam_wrapper>
+</xacro:macro> 
+</robot>
