@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(et_sim)
+project(rop3_etractor_sim)
 
 find_package(catkin REQUIRED)
 catkin_package()

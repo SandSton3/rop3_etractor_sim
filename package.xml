@@ -1,5 +1,5 @@
 <package>
-  <name>et_sim</name>
+  <name>rop3_etractor_sim</name>
   <version>0.5.0</version>
 
   <description>This package contains the simulation modell of the e-tractor</description>
